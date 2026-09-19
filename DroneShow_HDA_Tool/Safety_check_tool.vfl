@@ -1,0 +1,97 @@
+
+// ==========================================
+// 色の初期化
+// ==========================================
+vector base_color=chv("base_color");
+@Cd=base_color;
+
+
+
+// ==========================================
+// 速度チェック
+// ==========================================
+if (@Frame == 1) {v@v = {0, 0, 0};
+return;}
+float max_horiz   = ch("max_speed");   // 横移動の限界
+float max_climb   = ch("max_climb");   // 上昇の限界
+float max_descend = ch("max_descend"); // 下降の限界
+vector v_horiz = set(@v.x, 0, @v.z);
+float speed_h = length(v_horiz);
+float speed_y = @v.y;
+@Cd = {1, 1, 1};     // 白に戻す
+i@alarm_speed = 0;   // フラグを下ろす
+if (speed_h > max_horiz) {i@alarm_speed = 1;
+@Cd = {0, 1, 0};}
+if (speed_y > max_climb) {i@alarm_speed = 1;
+@Cd = {0, 1, 0};}
+if (speed_y < -max_descend) {i@alarm_speed = 1;
+@Cd = {0, 1, 0};}
+
+
+
+
+// ==========================================
+// 加速度チェック
+// ==========================================
+float max_accel = ch("max_accel");     // 許容加速度
+float ignore_h  = ch("ignore_height"); // 無視する高さ
+if (@P.y < ignore_h) {i@alarm_accel = 0;
+@Cd = {1, 1, 1};
+return;}
+float current_accel = length(v@accel);
+i@alarm_accel = 0;
+@Cd = {1, 1, 1};
+if (current_accel > max_accel) {i@alarm_accel = 1;
+@Cd = {0.5, 1, 0};}
+
+
+
+// ==========================================
+// バッテリー容量の設定
+// ==========================================
+f@battery=100.0;
+
+
+
+// ==========================================
+// バッテリーチェック
+// ==========================================
+vector current_P=point(1,"P",@ptnum);
+vector current_v=point(1,"v",@ptnum);
+vector current_accel=point(1,"accel",@ptnum);
+float dist=distance(@P,current_P);
+float hover_cost = ch("Hover_Cost"); // 1フレーム浮いてるだけで減る量
+float move_cost  = ch("Move_Cost");  // 1メートル動くと減る量
+float drain = hover_cost + (dist * move_cost);
+@battery -= drain;
+i@alarm_battery = 0;
+if (@battery <= 0.0) {@battery = 0.0;
+v@v = {0, 0, 0};
+v@accel = {0, 0, 0};
+@Cd = {1, 1, 1};}
+else {@P = current_P;
+v@v = current_v;
+v@accel = current_accel;}
+if (@battery < 20.0) {@Cd = {1, 1, 0};
+i@alarm_battery = 1;}
+
+
+
+// ==========================================
+// 飛行空域チェック
+// ==========================================
+vector center = chv("../area_center"); // エリアの中心座標(XZ)
+float radius = chf("../radius");       // 円の半径
+float height = ch("../height");        // 飛行可能な高さ
+float min_y = 0.0;
+float max_y = height;
+vector pos_xz = set(@P.x, 0.0, @P.z);
+vector center_xz = set(center.x, 0.0, center.z);
+float dist = distance(pos_xz, center_xz);
+@Cd = {1, 1, 1};
+i@alarm_geofence = 0;
+int is_out = 0;
+if (@P.y < min_y || @P.y > max_y) is_out = 1;
+if (dist > radius) is_out = 1;
+if (is_out == 1) {i@alarm_geofence = 1; 
+   @Cd = {0, 0, 1};}
