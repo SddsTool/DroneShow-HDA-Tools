@@ -1,0 +1,23 @@
+// ==========================================
+// 衝突チェック
+// ==========================================
+float body_size = chf("body_size");    // 機体の半径
+float safe_dist = chf("safe_distance");// 警告を出す距離
+
+float search_radius = max(safe_dist, body_size * 2.0);
+
+int close_pts[] = nearpoints(0, @P, search_radius, 2);
+
+vector col = set(1.0, 1.0, 1.0);       // 基本は安全の白色
+int alarm = 0;                         // 0:安全, 1:警告(黄色), 2:衝突(赤色)
+
+if (len(close_pts) > 1) {int other_pt = close_pts[1];
+    vector other_pos = point(0, "P", other_pt);
+    
+float dist = distance(@P, other_pos);
+
+if (dist <= (body_size * 2.0)) {col = set(1.0, 0.0, 0.0);alarm = 2;} 
+else if (dist <= safe_dist) {col = set(1.0, 1.0, 0.0);alarm = 1;}}
+
+@Cd = col;
+i@Collision = alarm;

@@ -1,0 +1,24 @@
+// ==========================================
+// グラデーションの方向指定
+// ==========================================
+int mode = chi("axis_mode");
+
+vector rel = relbbox(0, @P);
+
+if (mode == 0) {f@grad = rel.x;} // 条件分岐でグラデーションの方向を切り替え
+else if (mode == 1) {f@grad = rel.y;}     
+else if (mode == 2) {f@grad = rel.z;} 
+else if (mode == 3) {f@grad = (rel.x + rel.y) * 0.5;}
+else if (mode == 4) {f@grad = ((1.0 - rel.x) + rel.y) * 0.5;}
+
+
+
+// ==========================================
+// ウェーブ生成
+// ==========================================
+float freq = chf("frequency");//波の「細かさ」や「数」を決める
+float amp = chf("amplitude");//波の「高さ」を決める
+float offset = chf("offset");//Z軸（奥行き）方向にどれくらい波をズラすかを決める
+float wave_phase = chf("wave_phase");//波を動かす 
+float wave = sin((@P.x + @P.z * offset) * freq - wave_phase) * amp;
+@P.y += wave;
