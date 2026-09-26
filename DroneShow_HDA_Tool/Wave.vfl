@@ -1,9 +1,0 @@
-// ==========================================
-// ウェーブ生成
-// ==========================================
-float freq = chf("frequency");//波の「細かさ」や「数」を決める
-float amp = chf("amplitude");//波の「高さ」を決める
-float offset = chf("offset");//Z軸（奥行き）方向にどれくらい波をズラすかを決める
-float wave_phase = chf("wave_phase");//波を動かす 
-float wave = sin((@P.x + @P.z * offset) * freq - wave_phase) * amp;
-@P.y += wave;
